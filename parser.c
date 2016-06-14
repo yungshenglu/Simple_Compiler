@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <string.h>
 
@@ -10,16 +9,18 @@
 int offset_local;
 int offset_param;
 int current_func;
-
 int in_func_declaration;
+
 int exeNode(Node * p, int signal) {
 	HashNode * node, *s_or_a, *g_or_p;
 	char binary_op_str[3];
 	int label[2];
 	int retvalue;
 	int count;
+
 	if (!p)
 		return 0;
+	
 	switch (p->type) {
 	case TYPE_CONTENT:
 		if (signal) {

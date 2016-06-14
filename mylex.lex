@@ -162,6 +162,10 @@ void lex_failed(char *s) {
     // exit(1);
 }
 
+int yywrap() {
+	return 1;
+}
+
 void comment() {
 	char c, prev = 0;
   

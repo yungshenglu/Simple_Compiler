@@ -135,7 +135,6 @@ void code_push_ind(int idx) {
 }
 
 void code_push_cons(int constant) {
-	printf("656556\n");
 	sprintf(strbucket, "%s\t%s %d", PUSH, VARSIZE, constant);
 	output(strbucket);
 }

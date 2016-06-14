@@ -2122,8 +2122,9 @@ extern FILE *yyin;
 
 Node* setContent(int value) {
   Node *p;
+  size_t sizeNode = SIZE_NODE + sizeof(int);
 
-  if ((p = malloc(SIZE_NODE + sizeof(int))) == NULL)
+  if ((p = malloc(sizeNode)) == NULL)
     yyerror("Out of memory.");
 
   p->type = TYPE_CONTENT;
@@ -2189,6 +2190,10 @@ void yyerror(char *s) {
 }
 
 main() {
+  hash_init(var_local, HASHSIZE);
+  hash_init(var_local_SorA, HASHSIZE);
+  hash_init(var_local_GorP, HASHSIZE);
+
   yyparse();
   return 0;
 }
