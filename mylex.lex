@@ -1,10 +1,10 @@
 %{
 	#include <stdio.h>
 	#include <string.h>
-	
+
 	#include "node.h"
-	#include "hash.h"
 	#include "y.tab.h"
+	#include "hash.h"
 
 	/*
 	lex will return tokens(6 types):
@@ -19,86 +19,83 @@
 	    id is a string, and number is a int.(yacc can define by union)
 	*/
 
-	void lex_failed(char *s);
-	void comment();
-	void count();
-	int checkType();
+	void count(void);
 %}
 
 %%
-
-\n              { 	//printf("\n"); 
-				}
+ /* Comment */
+"/*"			{ 	comment(); }
+"//"[^\n]*      { 	/* consume //-comment */ }
 
  /* Keyword */
-int             { 	//printf("INT "); 
+"int"           { 	//printf("INT "); 
 					count();			
 					return INT; }
-char            { 	//printf("CHAR "); 			
+"char"          { 	//printf("CHAR "); 			
 					count();
 					return CHAR; }
-return          { 	//printf("RETURN "); 		
+"return"        { 	//printf("RETURN "); 		
 					count();
 					return RETURN; }
-if              { 	//printf("IF "); 			
+"if"            { 	//printf("IF "); 			
 					count();
 					return IF; }
-else            { 	//printf("ELSE "); 			
+"else"          { 	//printf("ELSE "); 			
 					count();
 					return ELSE; }
-while           { 	//printf("WHILE "); 		
+"while"         { 	//printf("WHILE "); 		
 					count();
 					return WHILE; }
-break           { 	//printf("BREAK "); 		
+"break"         { 	//printf("BREAK "); 		
 					count();
 					return BREAK; }
-print           { 	//printf("PRINT "); 		
+"print"         { 	//printf("PRINT "); 		
 					count();
 					return PRINT; }
-read            { 	//printf("READ "); 			
+"read"          { 	//printf("READ "); 			
 					count();
 					return READ; }
 
- /* Arithmrtic op */
-=               { 	//printf("ASSIGN "); 		
+ /* Arithmrtic operator */
+"="             { 	//printf("ASSIGN "); 	
 					count();
-					return ASSIGN; }
-!               { 	//printf("NOT "); 			
+					return '='; }
+"!"             { //printf("NOT "); 			
 					count();
-					return NOT; }
-\+              { 	//printf("PLUS "); 			
+					return '!'; }
+"+"             { 	//printf("PLUS "); 			
 					count();
-					return PLUS; }
--               { 	//printf("MINUS "); 		
+					return '+'; }
+"-"             { 	//printf("MINUS "); 		
 					count();
-					return MINUS; }
-\*              { 	//printf("MULTIPLY "); 		
+					return '-'; }
+"*"             { 	//printf("MULTIPLY "); 		
 					count();
-					return MULTIPLY; }
-\/              { 	//printf("DIVIDE "); 		
+					return '*'; }
+"/"             { 	//printf("DIVIDE "); 		
 					count();
-					return DIVIDE; }
+					return '/'; }
 
  /* Comparison op */
-==              { 	//printf("EQUAL ");			
+"=="            { 	//printf("EQUAL ");			
 					count();
 					return EQUAL; }
-!=              { 	//printf("NOT_EQUAL ");		
+"!="            { 	//printf("NOT_EQUAL ");		
 					count();
 					return NOT_EQUAL; }
-\<              { 	//printf("LESS ");			
+"<"             { 	//printf("LESS ");			
 					count();
-					return LESS; }
->               { 	//printf("GREATER ");		
+					return '<'; }
+">"             { 	//printf("GREATER ");		
 					count();
-					return GREATER; }
-\<=             { 	//printf("LESS_EQUAL ");	
+					return '>'; }
+"<="            { 	//printf("LESS_EQUAL ");	
 					count();
 					return LESS_EQUAL; }
->=              { 	//printf("GREATER_EQUAL ");	
+">="            { 	//printf("GREATER_EQUAL ");	
 					count();
 					return GREATER_EQUAL; }
-&&              {	//printf("AND ");			
+"&&"            {	//printf("AND ");			
 					count();
 					return AND; }
 "||"            { 	//printf("OR "); 			
@@ -108,31 +105,31 @@ read            { 	//printf("READ ");
  /* Special symbols */
 "["             { 	//printf("["); 				
 					count();
-					return O_BRACKET; }
+					return '['; }
 "]"             { 	//printf("]"); 				
 					count();
-					return C_BRACKET; }
+					return ']'; }
 "("             { 	//printf("("); 				
 					count();
-					return O_PARENTHESIS; }
+					return '('; }
 ")"             { 	//printf(")"); 				
 					count();
-					return C_PARENTHESIS; }
+					return ')'; }
 "{"             { 	//printf("{"); 				
 					count();
-					return O_BRACE; }
+					return '{'; }
 "}"             { 	//printf("}"); 				
 					count();
-					return C_BRACE; }
-;               { 	//printf(";"); 				
+					return '}'; }
+";"             { 	//printf(";"); 				
 					count();
-					return SEMICOLON; }
-,               { 	//printf(","); 				
+					return ';'; }
+","             { 	//printf(","); 				
 					count();
-					return COMMA; }
+					return ','; }
  
  /* Identifier (incorrect) */
-id[A-Z][a-z]*   { 	//printf("%s ", yytext); 		
+"id"[A-Z][a-zA_Z_]* { 	//printf("%s ", yytext); 		
 					//yylval.table = hash_lookup(yytext);
 					count();
 					return checkType(); }
@@ -141,32 +138,24 @@ id[A-Z][a-z]*   { 	//printf("%s ", yytext);
 [0-9]+          { 	//printf("%s ", yytext); 
 					count();
 					yylval.id_value = atoi(yytext);
-					return VAL; }
+					return CONSTANT; }
 
  /* Character */
-\".\"           { 	//printf("%s ", yytext); 	
+"\'.\'"         { 	//printf("%c ", yytext[1]); 	
 					return CH; }
 
- /* Single line comment (but return comment is useless) */
-"/*"			{ 	comment(); }
-"//"[^\n]*      { 	/* consume //-comment */ }
-
- /* other */
-[\t ]+          ;  	// ignore any space or tab.
-.               { 	//printf("WTF? "); 		
-					lex_failed(yytext); }
+ /* Others */
+[ \t\n]         {	//count();
+					;           }
+.               {	;			}
 
 %%
 
-void lex_failed(char *s) {
-    // exit(1);
-}
-
-int yywrap() {
+int yywrap(void) {
 	return 1;
 }
 
-void comment() {
+void comment(void) {
 	char c, prev = 0;
   
 	while ((c = input()) != 0) {
@@ -181,7 +170,7 @@ void comment() {
 
 int column = 0;
 
-void count() {
+void count(void) {
 	int i;
 
 	for (i = 0; yytext[i] != '\0'; ++i) {
@@ -194,7 +183,7 @@ void count() {
 	}
 }
 
-int checkType() {
+int checkType(void) {
 	yylval.id_index = ELFHash(yytext, strlen(yytext));
 	return IDENTIFIER;
 }

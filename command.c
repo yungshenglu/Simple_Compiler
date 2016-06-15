@@ -10,7 +10,7 @@ void output(char *str) {
 }
 
 static int func_is_main(int funcname) {
-	if (funcname == ELFHash("main", 4))
+	if (funcname == ELFHash("idMain", 4))
 		return 1;
 
 	return 0;
@@ -52,8 +52,9 @@ void code_label(int labelno) {
 	output(strbucket);
 }
 
+/* Jump instruction */
 void code_jmp(int labelno) {
-	sprintf(strbucket, "%s\t%s%d", JMP, LABEL, labelno);
+	sprintf(strbucket, "%s\t%s%d", J, LABEL, labelno);
 	output(strbucket);
 }
 
@@ -102,7 +103,7 @@ void code_move_reg(int target, int source) {
 	getregstr(t_reg, target);
 	getregstr(s_reg, source);
 
-	sprintf(strbucket, "%s\t%s, %s", MOV, t_reg, s_reg);
+	sprintf(strbucket, "%s\t%s, %s", MOVE, t_reg, s_reg);
 	output(strbucket);
 }
 
@@ -110,8 +111,7 @@ void code_push_mem(int addr, int offset) {
 	char regstr[REGSTR_LENGTH];
 	getregstr(regstr, offset);
 
-	sprintf(strbucket, "%s\t%s [%s%d+%s]", PUSH, VARSIZE,
-		GDATA_PRE, addr, regstr);
+	sprintf(strbucket, "%s\t%s [%s%d+%s]", PUSH, VARSIZE, GDATA_PRE, addr, regstr);
 	output(strbucket);
 }
 
@@ -154,17 +154,18 @@ void code_push_global_array(int var) {
 }
 
 void code_call_func(int funcname) {
-	sprintf(strbucket, "%s\t%s%d", CALLF, FUNC_PRE, funcname);
+	sprintf(strbucket, "%s\t%s%d", JAL, FUNC_PRE, funcname);
 	output(strbucket);
 }
 
 void code_start_bss() {
 	static int bss_mark = 0;
 	printf("%d\n", bss_mark);
+
 	if (!bss_mark) {
 		strcpy(strbucket, "section .bss");
 		output(strbucket);
-		++bss_mark;
+		bss_mark += 1;
 	}
 }
 
@@ -193,7 +194,7 @@ void code_start_func(int funcname) {
 	sprintf(strbucket, "%s\t%s", PUSH, EBP);
 
 	output(strbucket);
-	sprintf(strbucket, "%s\t%s, %s", MOV, EBP, ESP);
+	sprintf(strbucket, "%s\t%s, %s", MOVE, EBP, ESP);
 
 	output(strbucket);
 }
@@ -208,7 +209,7 @@ void code_end_func(int funcname) {
 	output(LEAVE);
 
 	if (!func_is_main(funcname))
-		output(RET);
+		output(JR);
 	else 
 		code_end_main();
 }
@@ -225,10 +226,11 @@ void code_test_condition(int reg, int test, int labelno) {
 	sprintf(strbucket, "%s\t%s, %d", CMP, regstr, test);
 	output(strbucket);
 
-	sprintf(strbucket, "%s\t%s%d", JE, LABEL, labelno);
+	sprintf(strbucket, "%s\t%s%d", BEQ, LABEL, labelno);
 	output(strbucket);
 }
 
+/* Assign operator */
 void code_op_assign(int target, int source) {
 	char t_reg[VARSTR_LENGTH];
 	char s_reg[REGSTR_LENGTH];
@@ -236,7 +238,7 @@ void code_op_assign(int target, int source) {
 	getregstr(s_reg, source);
 	getregstr(t_reg, target);
 
-	sprintf(strbucket, "%s\t%s [%s], %s", MOV, VARSIZE, t_reg, s_reg);
+	sprintf(strbucket, "%s\t%s [%s], %s", MOVE, VARSIZE, t_reg, s_reg);
 	output(strbucket);
 }
 
@@ -245,21 +247,21 @@ int code_get_array_offset(int baseoff, int idxreg, int varlength, int global) {
 	getregstr(regstr, idxreg);
 
 	if (global == 0) {	/* general local var */
-		sprintf(strbucket, "%s\t%s, %s", MOV, EBX, EBP);
+		sprintf(strbucket, "%s\t%s, %s", MOVE, EBX, EBP);
 		output(strbucket);
 	} 
 	else if (global == -1) {	/* parameter */
 		/* the array position in memory */
-		sprintf(strbucket, "%s\t%s, [%s+%d]", MOV, EBX, EBP, baseoff);
+		sprintf(strbucket, "%s\t%s, [%s+%d]", MOVE, EBX, EBP, baseoff);
 		output(strbucket);
 	} 
 	else {		/* global var, just calculate the array index offset */
-		sprintf(strbucket, "%s\t%s, 0", MOV, EBX);
+		sprintf(strbucket, "%s\t%s, 0", MOVE, EBX);
 		output(strbucket);
 	}
 
 	/* get the array index offset */
-	sprintf(strbucket, "%s\t%s, %d", IMUL, regstr, varlength);
+	sprintf(strbucket, "%s\t%s, %d", MULT, regstr, varlength);
 	output(strbucket);
 
 	sprintf(strbucket, "%s\t%s, %s", ADD, EBX, EAX);
@@ -284,25 +286,20 @@ int code_op_binary(int v1, int v2, char *op) {
 	int sar = 31;
 
 	if (strcmp(op, "+") == 0) {
-		sprintf(strbucket, "%s\t%s, [%s+%s]", LEA, EAX, regstr1,
-			regstr2);
-
+		sprintf(strbucket, "%s\t%s, [%s+%s]", LEA, EAX, regstr1, regstr2);
 	} 
 	else if (strcmp(op, "-") == 0) {
 		sprintf(strbucket, "%s\t%s, %s", SUB, regstr1, regstr2);
-
 	} 
 	else if (strcmp(op, "*") == 0) {
-		sprintf(strbucket, "%s\t%s, %s", IMUL, regstr1, regstr2);
-
+		sprintf(strbucket, "%s\t%s, %s", MULT, regstr1, regstr2);
 	} 
 	else if (strcmp(op, "/") == 0) {
-		sprintf(strbucket, "%s\t%s, %s", MOV, EDX, regstr1);
+		sprintf(strbucket, "%s\t%s, %s", MOVE, EDX, regstr1);
 		output(strbucket);
 		sprintf(strbucket, "%s\t%s, %d", SAR, EDX, sar);
 		output(strbucket);
-		sprintf(strbucket, "%s\t%s", IDIV, regstr2);
-
+		sprintf(strbucket, "%s\t%s", DIV, regstr2);
 	} 
 	else {		/* relop */
 		sprintf(strbucket, "%s\t%s, %s", CMP, regstr1, regstr2);

@@ -26,7 +26,7 @@ hash.o: hash.c hash.h
 	gcc -c hash.c
 
 lex: mylex.lex node.h hash.h y.tab.h
-	flex mylex.lex
+	lex mylex.lex
 
 yacc: myyacc.y node.h hash.h var.h command.h
 	yacc -d myyacc.y

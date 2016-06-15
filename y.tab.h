@@ -45,89 +45,73 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    INT = 258,
-    CHAR = 259,
-    RETURN = 260,
-    IF = 261,
-    ELSE = 262,
-    WHILE = 263,
-    BREAK = 264,
-    PRINT = 265,
-    READ = 266,
-    ASSIGN = 267,
-    NOT = 268,
-    PLUS = 269,
-    MINUS = 270,
-    MULTIPLY = 271,
-    DIVIDE = 272,
-    EQUAL = 273,
-    NOT_EQUAL = 274,
-    LESS = 275,
-    GREATER = 276,
-    LESS_EQUAL = 277,
-    GREATER_EQUAL = 278,
-    AND = 279,
-    OR = 280,
-    O_BRACKET = 281,
-    C_BRACKET = 282,
-    O_PARENTHESIS = 283,
-    C_PARENTHESIS = 284,
-    O_BRACE = 285,
-    C_BRACE = 286,
-    SEMICOLON = 287,
-    COMMA = 288,
-    PARAM = 289,
-    FUNC = 290,
-    VAR = 291,
-    CALL = 292,
-    GLOBAL_VAR = 293,
-    VAL = 294,
-    CH = 295,
-    IDENTIFIER = 296,
-    COMMENT = 297
+    CONSTANT = 258,
+    CH = 259,
+    INT = 260,
+    VOID = 261,
+    CHAR = 262,
+    IDENTIFIER = 263,
+    RETURN = 264,
+    IF = 265,
+    ELSE = 266,
+    WHILE = 267,
+    BREAK = 268,
+    PRINT = 269,
+    READ = 270,
+    ASSIGN = 271,
+    NOT = 272,
+    PLUS = 273,
+    MINUS = 274,
+    MULTIPLY = 275,
+    DIVIDE = 276,
+    EQUAL = 277,
+    NOT_EQUAL = 278,
+    LESS = 279,
+    GREATER = 280,
+    LESS_EQUAL = 281,
+    GREATER_EQUAL = 282,
+    AND = 283,
+    OR = 284,
+    FUNC = 285,
+    PARAM = 286,
+    CALL = 287,
+    VAR = 288,
+    GLOBAL_VAR = 289
   };
 #endif
 /* Tokens.  */
-#define INT 258
-#define CHAR 259
-#define RETURN 260
-#define IF 261
-#define ELSE 262
-#define WHILE 263
-#define BREAK 264
-#define PRINT 265
-#define READ 266
-#define ASSIGN 267
-#define NOT 268
-#define PLUS 269
-#define MINUS 270
-#define MULTIPLY 271
-#define DIVIDE 272
-#define EQUAL 273
-#define NOT_EQUAL 274
-#define LESS 275
-#define GREATER 276
-#define LESS_EQUAL 277
-#define GREATER_EQUAL 278
-#define AND 279
-#define OR 280
-#define O_BRACKET 281
-#define C_BRACKET 282
-#define O_PARENTHESIS 283
-#define C_PARENTHESIS 284
-#define O_BRACE 285
-#define C_BRACE 286
-#define SEMICOLON 287
-#define COMMA 288
-#define PARAM 289
-#define FUNC 290
-#define VAR 291
-#define CALL 292
-#define GLOBAL_VAR 293
-#define VAL 294
-#define CH 295
-#define IDENTIFIER 296
-#define COMMENT 297
+#define CONSTANT 258
+#define CH 259
+#define INT 260
+#define VOID 261
+#define CHAR 262
+#define IDENTIFIER 263
+#define RETURN 264
+#define IF 265
+#define ELSE 266
+#define WHILE 267
+#define BREAK 268
+#define PRINT 269
+#define READ 270
+#define ASSIGN 271
+#define NOT 272
+#define PLUS 273
+#define MINUS 274
+#define MULTIPLY 275
+#define DIVIDE 276
+#define EQUAL 277
+#define NOT_EQUAL 278
+#define LESS 279
+#define GREATER 280
+#define LESS_EQUAL 281
+#define GREATER_EQUAL 282
+#define AND 283
+#define OR 284
+#define FUNC 285
+#define PARAM 286
+#define CALL 287
+#define VAR 288
+#define GLOBAL_VAR 289
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -140,7 +124,7 @@ union YYSTYPE
   int id_index;
   Node *table;
 
-#line 144 "y.tab.h" /* yacc.c:1909  */
+#line 128 "y.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

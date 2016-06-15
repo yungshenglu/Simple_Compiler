@@ -3,21 +3,20 @@
 
 #define LABEL "L"
 #define CMP "cmp"
-#define JNE "jne"
-#define JE "je"
-#define MOV "mov"
-#define JMP "jmp"
-#define PUSH "push"
-#define POP "pop"
-#define ADD "add"
-#define SUB "sub"
-#define IMUL "imul"
-#define IDIV "idiv"
+#define BNE "bne"//
+#define BEQ "beq"//
+#define MOVE "move"//
+#define J "j"//
+#define PUSH "push"//
+#define POP "pop"//
+#define ADD "add"//
+#define SUB "sub"//
+#define MULT "mult"//
+#define DIV "div"//
 #define LEA "lea"
 #define LEAVE "leave"
-#define RET "ret"
+#define JR "jr"//
 #define SAR "sar"
-#define CMP "cmp"
 #define SETE "sete"
 #define SETNE "setne"
 #define SETG "setg"
@@ -25,7 +24,7 @@
 #define SETGE "setge"
 #define SETLE "setle"
 #define MOVZX "movzx"
-#define CALLF "call"
+#define JAL "jal"//
 
 #define EAX "eax"
 #define EBX "ebx"
@@ -38,7 +37,7 @@
 #define VARSIZE "dword"
 #define GLOBAL_VAR_LENGTH 2
 #define GLOBAL_VAR_DEFINE "resw"
-#define VARSTR_LENGTH 20	/* for [ebp-4] ... */
+#define VARSTR_LENGTH 20
 #define REGSTR_LENGTH 4
 
 #define MAX_STR_LENGTH 300

@@ -17,7 +17,7 @@
   void freeNode(Node *p);
   int exeNode(Node *p, int sign);
 
-  int yylexNode();
+  int yylexNode(void);
   void yyerror(char *s);
 %}
 
@@ -25,376 +25,399 @@
   int id_value;
   int id_index;
   Node *table;
-}
+};
 
-%token INT CHAR RETURN IF ELSE WHILE BREAK PRINT READ
-%token ASSIGN NOT PLUS MINUS MULTIPLY DIVIDE
-%token EQUAL NOT_EQUAL LESS GREATER LESS_EQUAL GREATER_EQUAL AND OR
-%token O_BRACKET C_BRACKET O_PARENTHESIS C_PARENTHESIS O_BRACE 
-       C_BRACE SEMICOLON COMMA
-
-%token PARAM FUNC VAR CALL GLOBAL_VAR
-
-%token <id_value> VAL CH
+%token <id_value> CONSTANT CH INT VOID CHAR
 %token <id_index> IDENTIFIER
 
-%token COMMENT
+%token RETURN IF ELSE WHILE BREAK 
+%token PRINT READ
+%token ASSIGN NOT PLUS MINUS MULTIPLY DIVIDE
+%token EQUAL NOT_EQUAL LESS GREATER LESS_EQUAL GREATER_EQUAL AND OR
+%token FUNC PARAM CALL VAR GLOBAL_VAR
 
-/*小心 MINUS可能是減法或是負號*/
-%type <table> Program 
-%type <table> DeclList DeclList_ Decl FunDecl
-%type <table> VarDecl VarDecl_ VarDeclList
-%type <table> ParamDeclList ParamDeclListTail ParamDeclListTail_ ParamDecl ParamDecl_
-%type <table> StmtList StmtList_ Stmt
-%type <table> Type Expr Expr_ Block ExprList ExprListTail ExprListTail_ ExprIdTail ExprArrayTail
-%type <id_value> UnaryOp BinOp
+%nonassoc ELSE
 
-%start Program
+%type <table> term var factor var_declaration local_declarations
+%type <table> additive_expression simple_expression expression
+%type <table> return_stmt iteration_stmt expression_stmt selection_stmt compound_stmt
+%type <table> statement statement_list 
+%type <table> param params_list params type_specifier
+%type <table> fun_declaration declaration declaration_list
+%type <table> call args arg_list
+
+%type <id_value> relop mulop addop
+
+%start program
 
 %%
 
-Program
-  : DeclList
-    {
-      exeNode($1, 0);
-      //freeNode($1);
+program
+  : declaration_list 
+    { 
+      exeNode($1, 0); 
+      //freeNode($1); 
     }
   ;
 
-DeclList
-  : DeclList_ DeclList 
-    {
-      $$ = operator(SEMICOLON, 2, $1, $2);
+declaration_list
+  : declaration_list declaration 
+    { 
+      $$ = operator(';', 2, $1, $2); 
     }
-	| /*epsilon*/
-    {
-      $$ = NULL;
-    }
-  ;
-
-DeclList_
-  : Type IDENTIFIER Decl 
-    {
-      $$ = operator(SEMICOLON, 2, $1, $2);
-      Node *tmp = setIndex($2);
+  | declaration 
+    { 
+      $$ = $1; 
     }
   ;
 
-Decl
-  : VarDecl
-    {
-      $$ = operator(GLOBAL_VAR, 1, $1);
+declaration
+  : var_declaration 
+    { 
+      $$  = operator(GLOBAL_VAR, 1, $1);
     }
-  | FunDecl
-    {
-      $$ = $1;
+  | fun_declaration 
+    { 
+      $$ = $1; 
     }
   ;
 
-VarDecl
-  : Type IDENTIFIER VarDecl_
+var_declaration
+  : type_specifier IDENTIFIER ';'
     {
       Node *tmp1;
-      /* Insert new var declaration */
+      /* here to insert new var declaration */
       tmp1 = setIndex($2);
       $$ = operator(VAR, 2, $1, tmp1);
     }
-  ;
-
-VarDecl_
-  :  SEMICOLON
+  | type_specifier IDENTIFIER '[' CONSTANT ']' ';'
     {
-    }
-  | O_BRACKET VAL C_BRACKET SEMICOLON
-    {
-      Node *tmp2 = setContent($2);
-      $$ = operator(VAR, 1, $2, tmp2);
+      Node *tmp1, *tmp2;
+      tmp1 = setIndex($2);
+      tmp2 = setContent($4);
+      $$ = operator(VAR, 3, $1, tmp1, tmp2);
     }
   ;
 
-FunDecl
-  : O_PARENTHESIS ParamDeclList C_PARENTHESIS Block
-    {
-      $$ = operator(FUNC, 2, $2, $4);
+type_specifier
+  : INT 
+    { 
+      $$ = setContent(INT); 
     }
-  ;
-
-VarDeclList
-  : VarDecl VarDeclList
-  | /*epsilon*/
-    {
-      $$ = NULL;
+  | VOID 
+    { 
+      $$ = setContent(VOID); 
     }
-  ;
-
-ParamDeclList
-  : ParamDeclListTail
-    {
-      $$ = $1;
-    }
-	| /*epsilon*/
-    {
-      $$ = NULL;
-    }
-  ;
-
-ParamDeclListTail
-  : ParamDecl ParamDeclListTail_
-  ;
-
-ParamDeclListTail_
-  :	COMMA ParamDeclListTail 
-    {
-      $$ = operator(COMMA, 1, $2);
-    }
-  |	/*epsilon*/
-    {
-      $$ = NULL;
-    }
-  ;
-
-ParamDecl
-  : Type IDENTIFIER ParamDecl_
-    {
-      Node *tmp = setIndex($2);
-      $$ = operator(PARAM, 2, $1, tmp);
-    }
-  ;
-
-ParamDecl_
-  : O_BRACKET C_BRACKET
-    {
-      Node *tmp;
-      $$ = operator(PARAM, 3);
-    }
-	| /*epsilon*/
-    {
-      $$ = NULL;
-    }
-  ;
-
-Block
-  : O_BRACE VarDeclList StmtList C_BRACE
-    {
-      $$ = operator(O_BRACE, 2, $2, $3);
-    }
-  ;
-
-Type
-  : INT
-    {
-      $$ = setContent(INT);
-    }
-	| CHAR
+  | CHAR
     {
       $$ = setContent(CHAR);
     }
   ;
 
-StmtList
-  : Stmt StmtList_
+fun_declaration
+  : type_specifier IDENTIFIER '(' params ')' 
     {
-      $$ = operator(SEMICOLON, 2, $1, $2);
+      Node *tmp1;
+      tmp1 = setIndex($2);
+      $$ = operator(FUNC, 3, $1, tmp1, $4);
+    }
+
+  | compound_stmt 
+    { 
+      $$ = operator(FUNC, 1, $1); 
     }
   ;
 
-StmtList_
-  : StmtList
-	| /*epsilon*/
-    {
-      $$ = NULL;
-    }
-  ;
-
-Stmt
-  : SEMICOLON
-    {
-      $$ = NULL;
-    }
-	| Expr SEMICOLON
-    {
+params
+  : params_list 
+    { 
       $$ = $1;
     }
-	| RETURN Expr SEMICOLON
-    {
-      $$ = operator(RETURN, 1, $2);
+  | 
+    { 
+      $$ = NULL; 
     }
-	| BREAK SEMICOLON
-    {
-      $$ = operator(BREAK, 0);
+  ;
+
+params_list
+  : params_list ',' param 
+    { 
+      $$ = operator(',', 2, $1, $3); 
     }
-	| IF O_PARENTHESIS Expr C_PARENTHESIS Stmt ELSE Stmt
-    {
-      $$ = operator(IF, 2, $3, $5);
-    }
-	| WHILE O_PARENTHESIS Expr C_PARENTHESIS Stmt
-    {
-      $$ = operator(WHILE, 2, $3, $5);
-    }
-	| Block 
-    {
+  | param 
+    { 
       $$ = $1;
     }
-	| PRINT IDENTIFIER SEMICOLON 
+  ;
+
+param
+  : type_specifier IDENTIFIER
     {
-      $$ = operator(PRINT, 1, $2);
+      Node *tmp1;
+      /* here to insert new var declaration */
+      tmp1 = setIndex($2);
+      $$ = operator(PARAM, 2, $1, tmp1);
     }
-	| READ IDENTIFIER SEMICOLON
+  | type_specifier IDENTIFIER '[' ']'
     {
-      $$ = operator(READ, 1, $2);
+      Node *tmp1;
+      /* here to insert new var declaration */
+      tmp1 = setIndex($2);
+      $$ = operator(PARAM, 3, $1, tmp1, NULL);
     }
   ;
 
-Expr
-  : UnaryOp Expr
-    {
-      $$ = operator($1, 1, $2);
-    }
-	| VAL Expr_
-    {
-      $$ = $2;
-    }
-	| O_PARENTHESIS Expr C_PARENTHESIS Expr_
-    {
-      $$ = $2;
-    }
-	| IDENTIFIER ExprIdTail
-    {
-      Node *tmp = setIndex($1);
-    }
-  ;
-
-ExprIdTail
-  :	Expr_
-    {
-      $$ = $1;
-    }
-	| O_PARENTHESIS ExprList C_PARENTHESIS Expr_
-    {
-      $$ = $2;
-    }
-	| O_BRACKET Expr C_BRACKET ExprArrayTail
-    {
-      $$ = operator(O_BRACKET, 2, tmp, $2);
-    }
-	| ASSIGN Expr
-    {
-      $$ = operator(ASSIGN, 1, $2);
-    }
-  ;
-
-ExprArrayTail
-  : Expr_
-    {
-      $$ = $1;
-    }
-	| ASSIGN Expr
-    {
-      $$ = operator(ASSIGN, 1, $2);
-    }
-  ;
-
-Expr_
-  : BinOp Expr
-    {
-      $$ = operator($1, 1, $2);
-    }
-	| /*epsilon*/
-    {
-      $$ = NULL;
-    }
-  ;
-
-ExprList
-  : ExprListTail
-	| /*epsilon*/
-    {
-      $$ = NULL;
-    }
-  ;
-
-ExprListTail
-  : Expr ExprListTail_
-  ;
-
-ExprListTail_
-  : COMMA ExprListTail
-    {
-      $$ = operator(COMMA, 1, $2);
-    }
-	| /*epsilon*/
-    {
-      $$ = NULL;
-    }
-  ;
-
-UnaryOp
-  : MINUS
-    {
-      $$ = MINUS;
-    }
-  | NOT
-    {
-      $$ = NOT;
-    }
-  ;
-
-BinOp
-  : PLUS 
+compound_stmt
+  : '{' local_declarations statement_list '}' 
     { 
-      $$ = '+'; 
+      $$ = operator('{', 2, $2, $3); 
     }
-  | MINUS
+  ;
+
+local_declarations
+  : local_declarations var_declaration 
     { 
-      $$ = '-'; 
+      $$ = operator(';', 2, $1, $2); 
     }
-  | MULTIPLY
+  | /* empty */ 
     { 
-      $$ = '*'; 
+      $$ = NULL; 
     }
-  | DIVIDE
+  ;
+
+statement_list
+  : statement_list statement 
     { 
-      $$ = '/'; 
+      $$ = operator(';', 2, $1, $2); 
     }
-  | EQUAL
+  | /* empty */ 
     { 
-      $$ = EQUAL; 
+      $$ = NULL; 
     }
-  | NOT_EQUAL
+  ;
+
+statement
+  : expression_stmt 
     { 
-      $$ = NOT_EQUAL; 
+      $$ = $1; 
     }
-  | LESS
+  | compound_stmt 
     { 
-      $$ = '<'; 
+      $$ = $1; 
     }
-  | LESS_EQUAL
+  | selection_stmt 
+    { 
+      $$ = $1; 
+    }
+  | iteration_stmt 
+    { 
+      $$ = $1; 
+    }
+  | return_stmt 
+    { 
+      $$ = $1; 
+    }
+  ;
+
+expression_stmt
+  : expression ';' 
+    { 
+      $$ = $1; 
+    }
+  | ';' 
+    { 
+      $$ = NULL; 
+    }
+  ;
+
+selection_stmt
+  : IF '(' expression ')' statement 
+    { 
+      $$ = operator(IF, 2, $3, $5); 
+    }
+  | IF '(' expression ')' statement ELSE statement
+    { 
+      $$ = operator(IF, 3, $3, $5, $7); 
+    }
+  ;
+
+iteration_stmt
+  : WHILE '(' expression ')' statement 
+    { 
+      $$ = operator(WHILE, 2, $3, $5); 
+    }
+  ;
+
+return_stmt
+  : RETURN ';' 
+    { 
+      $$ = operator(RETURN, 0); 
+    }
+  | RETURN expression ';' 
+    { 
+      $$ = operator(RETURN, 1, $2); 
+    }
+  ;
+
+expression
+  : var '=' expression
+    {
+      $$ = operator('=', 2, $1, $3);
+    }
+  | simple_expression 
+    { 
+      $$ = $1; 
+    }
+  ;
+
+var
+  : IDENTIFIER 
+    {
+      $$ = setIndex($1); 
+    }
+  | IDENTIFIER '[' expression ']' 
+    {
+      Node *tmp1;
+      tmp1 = setIndex($1);
+      $$ = operator('[', 2, tmp1, $3); 
+    }
+  ;
+
+simple_expression
+  : additive_expression relop additive_expression
+    {
+      $$ = operator($2, 2, $1, $3); 
+    }
+  | additive_expression 
+    { 
+      $$ = $1; 
+    }
+  ;
+
+relop
+  : LESS_EQUAL 
     { 
       $$ = LESS_EQUAL; 
     }
-  | GREATER
+  | '<' 
+    {
+      $$ = '<'; 
+    }
+  | '>' 
     { 
       $$ = '>'; 
     }
-  | GREATER_EQUAL
+  | GREATER_EQUAL 
     { 
       $$ = GREATER_EQUAL; 
     }
-  | AND
+  | EQUAL 
     { 
-      $$ = AND; 
+      $$ = EQUAL; 
     }
-  | OR
+  | NOT_EQUAL 
     { 
-      $$ = OR; 
+      $$ = NOT_EQUAL; 
+    }
+  ;
+
+additive_expression
+  : additive_expression addop term
+    {
+      $$ = operator($2, 2, $1, $3);
+    }
+  | term
+    { 
+      $$ = $1;
+    }
+  ;
+
+addop
+  : '+' 
+    { 
+      $$ = '+'; 
+    }
+  | '-' 
+    { 
+      $$ = '-'; 
+    }
+  ;
+
+term
+  : term mulop factor
+    {
+      $$ = operator($2, 2, $1, $3);
+    }
+  | factor 
+    { 
+      $$ = $1; 
+    }
+  ;
+
+mulop
+  : '*' 
+    { 
+      $$ = '*'; 
+    }
+  | '/' 
+    { 
+      $$ = '/'; 
+    }
+  ;
+
+factor
+  : '(' expression ')' 
+    { 
+      $$ = $2; 
+    }
+  | var 
+    { 
+      $$ = $1; 
+    }
+  | call 
+    { 
+      $$ = $1; 
+    }
+  | CONSTANT 
+    { 
+      $$ = setContent($1); 
+    }
+  ;
+
+call
+  : IDENTIFIER '(' args ')'
+    { 
+        Node *tmp1;
+        tmp1 = setIndex($1);
+        $$ = operator(CALL, 2, tmp1, $3);
+    }
+  ;
+
+args
+  : arg_list
+    { 
+      $$ = $1; 
+    }
+  | /* empty */ 
+    { 
+      $$ = NULL; 
+    }
+  ;
+
+arg_list
+  : arg_list ',' expression 
+    { 
+      $$ = operator(',', 2, $1, $3); 
+    }
+  | expression 
+    { 
+      $$ = $1; 
     }
   ;
 
 %%
 
 #define SIZE_NODE ((char*)&p->content - (char*)p)
-
-extern FILE *yyin;
 
 Node* setContent(int value) {
   Node *p;
@@ -462,14 +485,15 @@ void freeNode(Node *p) {
 
 /* Error message */
 void yyerror(char *s) {
-  fprintf(stderr, "ERROR: %s.\n", s);
+  printf("ERROR: %s\n", s);
 }
 
-main() {
+int main(void) {
   hash_init(var_local, HASHSIZE);
   hash_init(var_local_SorA, HASHSIZE);
   hash_init(var_local_GorP, HASHSIZE);
-
+  
   yyparse();
+
   return 0;
 }
