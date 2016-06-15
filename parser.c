@@ -24,6 +24,7 @@ int exeNode(Node *p, int signal) {
 
 	switch (p->type) {
 		case TYPE_CONTENT:
+			//printf("TYPE_CONTENT\t");
 			if (signal) {
 				code_push_cons(p->content);
 			}
@@ -31,6 +32,7 @@ int exeNode(Node *p, int signal) {
 			return 1;
 		
 		case TYPE_INDEX:
+			//printf("TYPE_INDEX\t");
 			node = hash_lookup(var_local, HASHSIZE, p->index);
 			
 			if (node == NULL) {
@@ -61,6 +63,7 @@ int exeNode(Node *p, int signal) {
 			return 1;
 
 		case TYPE_OP:
+			//printf("TYPE_OP\t");
 			switch (p->op.op_name) {
 				case GLOBAL_VAR:
 					code_start_bss();
