@@ -190,7 +190,7 @@ void code_push_global_array(int var) {
 }
 
 void code_call_func(int funcname) {
-	sprintf(strbucket, "%s\t%s%d", JAL, FUNC_PRE, funcname);
+	sprintf(strbucket, "%s\t%s%d", JA, FUNC_PRE, funcname);
 	output(strbucket);
 }
 
@@ -253,8 +253,10 @@ void code_end_func(int funcname) {
 	sprintf(strbucket, "%s\t%s, %s, 4", ADDI, SP, SP);
 	output(strbucket);
 
-	if (!func_is_main(funcname))
-		output(JR);
+	if (!func_is_main(funcname)) {
+		sprintf(strbucket, "%s\t%s", JR, RA);
+		output(strbucket);
+	}
 	else 
 		code_end_main();
 }
@@ -310,7 +312,7 @@ int code_get_array_offset(int baseoff, int idxreg, int varlength, int global) {
 	sprintf(strbucket, "%s\t%s, %s, %d", ADDI, T7, T7, varlength);
 	output(strbucket);
 
-	sprintf(strbucket, "%s\t%s, %s", MULT, regstr, T7);
+	sprintf(strbucket, "%s\t%s, %s", MUL, regstr, T7);
 	output(strbucket);
 
 	sprintf(strbucket, "%s\t%s, %s, %s", ADD, T1, T1, T0);
@@ -333,85 +335,58 @@ int code_op_binary(int v1, int v2, char *op) {
 	getregstr(regstr2, v2);
 
 	if (strcmp(op, "+") == 0) {
-		sprintf(strbucket, "%s\t%s, %s(%s)", LEA, T0, regstr2, regstr1);
+		sprintf(strbucket, "%s\t%s, %s, %s", ADD, regstr1, regstr2, regstr1);
 	} 
 	else if (strcmp(op, "-") == 0) {
-		sprintf(strbucket, "%s\t%s, %s", SUB, regstr1, regstr2);
+		sprintf(strbucket, "%s\t%s, %s, %s", SUB, regstr1, regstr2, regstr1);
 	} 
 	else if (strcmp(op, "*") == 0) {
-		sprintf(strbucket, "%s\t%s, %s", MULT, regstr1, regstr2);
+		sprintf(strbucket, "%s\t%s, %s, %s", MUL, regstr1, regstr2, regstr1);
 	} 
 	else if (strcmp(op, "/") == 0) {
-		sprintf(strbucket, "%s\t%s, %s", MOVE, T3, regstr1);
+		sprintf(strbucket, "%s\t%s, %s, %s", DIV, regstr1, regstr2, regstr1);
 		output(strbucket);
-
-		sprintf(strbucket, "%s\t%s, %s", DIV, T6, regstr2);
 	} 
 	else {		/* relop */
-		sprintf(strbucket, "%s\t%s, %s, %d", ADDI, T9, T9, 1);
-		output(strbucket);
-
 		if (strcmp(op, "==") == 0) {
-			sprintf(strbucket, "%s\t%s, %s, EQ", BEQ, regstr1, regstr2);
+			sprintf(strbucket, "%s\t%s, %s, %s", SEQ, regstr1, regstr2, regstr1);
 			output(strbucket);
-
-			sprintf(strbucket, "%s\t%s, %s, %d", ADDI, T9, T9, 1);
-			output(strbucket);
-
-			sprintf(strbucket, "EQ:\n%s\t%s, %s", MOVE, LO, T9);
 		}
 		else if (strcmp(op, "!=") == 0) {
-			sprintf(strbucket, "%s\t%s, %s, NE", BNE, regstr1, regstr2);
+			sprintf(strbucket, "%s\t%s, %s, %s", SNE, regstr1, regstr2, regstr1);
 			output(strbucket);
-
-			sprintf(strbucket, "%s\t%s, %s, %d", ADDI, T9, T9, 1);
-			output(strbucket);
-
-			sprintf(strbucket, "NE:\n%s\t%s, %s", MOVE, LO, T9);
 		}
 		else if (strcmp(op, ">") == 0) {
-			sprintf(strbucket, "%s\t%s, %s, %s", SLT, T8, regstr2, regstr1);
+			sprintf(strbucket, "%s\t%s, %s, %s", SGT, regstr1, regstr2, regstr1);
 			output(strbucket);
-
-			sprintf(strbucket, "%s\t%s, %s, GT", BEQ, T8, T9);
-			output(strbucket);
-
-			sprintf(strbucket, "GT:\n%s\t%s, %s", MOVE, LO, T9);
 		}
 		else if (strcmp(op, "<") == 0) {
-			sprintf(strbucket, "%s\t%s, %s, %s", SLT, T8, regstr1, regstr2);
+			sprintf(strbucket, "%s\t%s, %s, %s", SLT, regstr1, regstr2, regstr1);
 			output(strbucket);
-
-			sprintf(strbucket, "%s\t%s, %s, LT", BEQ, T8, T9);
-			output(strbucket);
-
-			sprintf(strbucket, "LT:\n%s\t%s, %s", MOVE, LO, T9);
 		}
 		else if (strcmp(op, ">=") == 0) {
-			sprintf(strbucket, "%s\t%s, %s, %s", SLT, T8, regstr1, regstr2);
+			sprintf(strbucket, "%s\t%s, %s, %s", SGE, regstr1, regstr2, regstr1);
 			output(strbucket);
-
-			sprintf(strbucket, "%s\t%s, %s, GE", BEQ, T8, ZR);
-			output(strbucket);
-
-			sprintf(strbucket, "GE:\n%s\t%s, %s", MOVE, LO, T9);
 		}
 		else if (strcmp(op, "<=") == 0) {
-			sprintf(strbucket, "%s\t%s, %s, %s", SLT, T8, regstr2, regstr1);
+			sprintf(strbucket, "%s\t%s, %s, %s", SLE, regstr1, regstr2, regstr1);
+			output(strbucket);
+		}
+		else if (strcmp(op, "&&") == 0) {
+			sprintf(strbucket, "%s\t%s, %s, %s", ANDI, T9, regstr1, regstr2);
 			output(strbucket);
 
-			sprintf(strbucket, "%s\t%s, %s, LE", BEQ, T8, ZR);
+			sprintf(strbucket, "%s\t%s, %s, %s", SNE, regstr2, T9, regstr1);
+		}
+		else if (strcmp(op, "||") == 0) {
+			sprintf(strbucket, "%s\t%s, %s, %s", ORI, T9, regstr1, regstr2);
 			output(strbucket);
 
-			sprintf(strbucket, "LE:\n%s\t%s, %s", MOVE, LO, T9);
+			sprintf(strbucket, "%s\t%s, %s, %s", SNE, regstr2, T9, regstr1);
 		}
 
 		output(strbucket);
-
-		sprintf(strbucket, "%s\t%s, %s, 1", ADDIU, T0, T0);
 	}
-
-	output(strbucket);
 
 	return 1;		/* return which reg it stores the result */
 }

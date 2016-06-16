@@ -4,7 +4,6 @@
 #define LABEL "L"//
 #define BNE "bne"//
 #define BEQ "beq"//
-#define SLT "slt"//
 
 #define MOVE "move"//
 #define J "j"//
@@ -12,11 +11,22 @@
 #define ADD "add"//
 #define ADDI "addi"//
 #define SUB "sub"//
-#define MULT "mult"//
+#define MUL "mul"//
 #define DIV "div"//
+#define ANDI "and"//
+#define ORI "or"//
+
+#define SEQ "seq"//
+#define SNE "sne"//
+#define SLE "sle"//
+#define SGE "sge"//
+#define SGT "sgt"//
+#define SLT "slt"//
 
 #define SW "sw"//
 #define LW "lw"//
+
+#define LI "li"//
 
 #define LEA "lea"//
 #define LEAVE "leave"//
@@ -24,7 +34,7 @@
 #define JR "jr"//
 
 #define MOVZX "movzx"//
-#define JAL "jal"//
+#define JA "jal"//
 
 #define T0 "$t0"//
 #define T1 "$t1"//
@@ -36,10 +46,16 @@
 #define T8 "$t8"//branch
 #define T9 "$t9"//1
 
+#define V0 "$V0"//
+#define V1 "$V1"
+
+#define A0 "$a0"//
+
 #define FP "$fp"//
 #define SP "$sp"//
 #define LO "$t4"//
 #define ZR "$zero"//
+#define RA "$ra"//
 
 #define GLOBAL_VAR_LENGTH 2
 #define GLOBAL_VAR_DEFINE "resw"
@@ -52,8 +68,6 @@
 #define GDATA_PRE "D_"
 
 char strbucket[MAX_STR_LENGTH];
-
-void output(char *str);
 
 static int func_is_main(int funcname);
 

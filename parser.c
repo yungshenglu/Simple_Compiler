@@ -5,6 +5,7 @@
 #include "y.tab.h"
 #include "hash.h"
 #include "var.h"
+#include "command.h"
 
 int offset_local;
 int offset_param;
@@ -24,7 +25,6 @@ int exeNode(Node *p, int signal) {
 
 	switch (p->type) {
 		case TYPE_CONTENT:
-			//printf("TYPE_CONTENT\t");
 			if (signal) {
 				code_push_cons(p->content);
 			}
@@ -32,7 +32,6 @@ int exeNode(Node *p, int signal) {
 			return 1;
 		
 		case TYPE_INDEX:
-			//printf("TYPE_INDEX\t");
 			node = hash_lookup(var_local, HASHSIZE, p->index);
 			
 			if (node == NULL) {
@@ -63,7 +62,6 @@ int exeNode(Node *p, int signal) {
 			return 1;
 
 		case TYPE_OP:
-			//printf("TYPE_OP\t");
 			switch (p->op.op_name) {
 				case GLOBAL_VAR:
 					code_start_bss();
@@ -83,17 +81,17 @@ int exeNode(Node *p, int signal) {
 					} 
 					else {
 						if (p->op.operand == 2) {	/* not array */
-							/* FIXME:var_count thing, esp */ 
 							offset_local -= VAR_LENGTH;
 							code_sub_esp(VAR_LENGTH);
+
 							node = hash_insert(var_local, HASHSIZE, p->op.node[1]->index, offset_local);
 							s_or_a = hash_insert(var_local_SorA, HASHSIZE, p->op.node[1]->index, SCALAR);
 							g_or_p = hash_insert(var_local_GorP, HASHSIZE, p->op.node[1]->index, GENERAL);
 						} 
 						else if (p->op.operand == 3) {
-							/* FIXME:var_count thing, esp */ 
 							offset_local -= VAR_LENGTH * p->op.node[2]->content;
 							code_sub_esp(VAR_LENGTH * p->op.node[2]->content);
+
 							node = hash_insert(var_local, HASHSIZE, p->op.node[1]->index, offset_local);
 							s_or_a = hash_insert(var_local_SorA, HASHSIZE, p->op.node[1]->index, ARRAY);
 							g_or_p = hash_insert(var_local_GorP, HASHSIZE, p->op.node[1]->index, GENERAL);
@@ -136,8 +134,7 @@ int exeNode(Node *p, int signal) {
 						/* in callee, [ebp] is the old ebp, [ebp+4] is the caller's addr
 						 * so the param start at [ebp+8] */ 
 						offset_param = VAR_LENGTH;
-				
-						/*param_count = 0; */ 
+
 						current_func = p->op.node[1]->index;
 						code_start_func(p->op.node[1]->index);
 						
@@ -148,7 +145,6 @@ int exeNode(Node *p, int signal) {
 					return 1;
 				
 				case PARAM:
-					/*++param_count; */ 
 					offset_param += VAR_LENGTH;
 					node = hash_insert(var_local, HASHSIZE, p->op.node[1]->index, offset_param);
 					g_or_p = hash_insert(var_local_GorP, HASHSIZE, p->op.node[1]->index, PARAMETER);
@@ -166,6 +162,7 @@ int exeNode(Node *p, int signal) {
 					/* 1 means need push when means need push */ 
 					count = exeNode(p->op.node[1], 1);
 					count += exeNode(p->op.node[0], 0);
+
 					code_pop(1);
 					code_op_assign(2, 1);
 					
@@ -198,6 +195,14 @@ int exeNode(Node *p, int signal) {
 				case NOT_EQUAL:
 					strcpy(binary_op_str, "!=");
 					goto op_binary;
+
+				case AND:
+					strcpy(binary_op_str, "&&");
+					goto op_binary;
+
+				case OR:
+					strcpy(binary_op_str, "||");
+					goto op_binary;
 				
 				case '+':
 					strcpy(binary_op_str, "+");
@@ -213,6 +218,7 @@ int exeNode(Node *p, int signal) {
 				
 				case '/':
 					strcpy(binary_op_str, "/");
+					goto op_binary;
 				
 				op_binary:
 					count = exeNode(p->op.node[0], 1);
@@ -350,14 +356,40 @@ int exeNode(Node *p, int signal) {
 					return 0;
 
 				case PRINT:
+					//Load();
+					if (p->op.node[0]->type == INT) {
+						sprintf(strbucket, "%s\t%s, 1\n\t syscall\n", LI, V0);
+						output(strbucket);
 
+						sprintf(strbucket, "%s\t%s, 32\n", LI, A0);
+						output(strbucket);
+
+						sprintf(strbucket, "%s\t%s, 11\n\t syscall\n", LI, V0);
+						output(strbucket);
+					}
+					else if (p->op.node[0]->type == CHAR) {
+						sprintf(strbucket, "%s\t%s, 11\n\t syscall", LI, V0);
+						output(strbucket);
+
+						sprintf(strbucket, "%s\t%s, 32\n\t syscall", LI, A0);
+						output(strbucket);
+					}
 					return 0;
 
 				case READ:
-
+					if (p->op.node[0]->type == INT) {
+						sprintf(strbucket, "%s\t%s, 5\n\t syscall\n", LI, V0);
+						output(strbucket);
+					}
+					else if (p->op.node[0]->type == CHAR) {
+						sprintf(strbucket, "%s\t%s, 12\n\t syscall\n", LI, V0);
+						output(strbucket);
+					}
+					//Store();
 					return 0;
 
 				case BREAK:
+
 
 					return 0;
 			}
