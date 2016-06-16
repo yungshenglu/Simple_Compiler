@@ -4,250 +4,371 @@ inputchar db 0
 section .text
 global F_124565444
 F_124565444:
-push	ebp
-move	ebp, esp
-sub esp, 4
-mov dword [ebp-4], 0
-jmp G2
+addi	$sp, $sp, -4
+sw	$fp, 0($sp)
+move	$fp, $sp
+addi $sp, -4
+move -4($fp), 0
+j G2
 G1:
-add dword [ebp-4], 1
-push edx
+add -4($fp), 1
+addi $sp, $sp, -4
+sw $t3, 0($sp)
 G2:
-mov edx, 0
-mov eax, [ebp+8]
-mov ebx, 10
-div ebx
-mov [ebp+8], eax
-cmp eax, 0
+move	$t3, 0
+move $t0, 8($fp)
+move $t1, 10
+div $t1
+move 8($fp), $t0
+cmp $t0, 0
 jnz G1
-push edx
-add dword [ebp-4], 1
-jmp G3
+addi $sp, $sp, -4
+sw $t3, 0($sp)
+add -4($fp), 1
+j G3
 G4:
-sub dword [ebp-4], 1
-pop edx
-mov eax, 4
-mov ebx, 1
-mov ecx, numbers
-add ecx, edx
-mov edx, 1
+sub -4($fp), 1
+lw $t3, 0($sp)
+addi $sp, $sp, 4
+move $t0, 4
+move $t1, 1
+move $t2, numbers
+add $t2, $t3
+move $t3, 1
 int 80h
 G3:
-cmp dword [ebp-4], 0
+cmp -4($fp), 0
 jnz G4
-mov eax, 4
-mov ebx, 1
-lea ecx, [numbers+10]
-mov edx, 1
+move $t0, 4
+move $t1, 1
+lea $t2, 10(numbers)
+move $t3, 1
 int 80h
-leave
+move	$sp, $fp
+lw	$fp, 0($sp)
+addi	$sp, $sp, 4
 jr
 global F_7362500
 F_7362500:
-push	ebp
-move	ebp, esp
-sub esp, 4
-mov dword [ebp-4], 0
-mov byte [inputchar], 0
-jmp G6
+addi	$sp, $sp, -4
+sw	$fp, 0($sp)
+move	$fp, $sp
+addi $sp, -4
+move -4($fp), 0
+move byte [inputchar], 0
+j G6
 G5:
-mov dword eax, [ebp-4]
-mov ebx, 10
-mul ebx
-xor ecx, ecx
-mov byte cl, [inputchar]
-sub ecx, 48
-add eax, ecx
-mov dword [ebp-4], eax
+move $t0, -4($fp)
+move $t1, 10
+mult $t1
+xor $t2, $t2
+move byte cl, [inputchar]
+addi $t2, -48
+add $t0, $t2
+move -4($fp), $t0
 G6:
-mov eax, 03h
-mov ebx, 00h
-mov ecx, inputchar
-mov edx, 01h
+move $t0, 03h
+move $t1, 00h
+move $t2, inputchar
+move $t3, 01h
 int 80h
 cmp byte [inputchar], 0ah
 jne G5
-mov dword eax, [ebp-4]
-leave
+move $t0, -4($fp)
+move	$sp, $fp
+lw	$fp, 0($sp)
+addi	$sp, $sp, 4
 jr
 global F_206329998
 F_206329998:
-push	ebp
-move	ebp, esp
-sub	esp, 4
-push	dword [ebp+12]
-push	dword [ebp+8]
-pop	ebx
-pop	eax
-lea	eax, [eax+ebx]
-push	dword eax
-lea	ebx, [ebp-4]
-pop	eax
-move	dword [ebx], eax
-push	dword [ebp-4]
-pop	eax
-leave
+addi	$sp, $sp, -4
+sw	$fp, 0($sp)
+move	$fp, $sp
+addi	$sp, $sp, -4
+addi	$sp, $sp, -4
+sw	12($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	8($fp), 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+lea	$t0, $t1($t0)
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lea	$t1, -4($fp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
+addi	$sp, $sp, -4
+sw	-4($fp), 0($sp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	$sp, $fp
+lw	$fp, 0($sp)
+addi	$sp, $sp, 4
 jr
-leave
+move	$sp, $fp
+lw	$fp, 0($sp)
+addi	$sp, $sp, 4
 jr
 global F_116996094
 F_116996094:
-push	ebp
-move	ebp, esp
-sub	esp, 4
-sub	esp, 4
-sub	esp, 4
-sub	esp, 4
-sub	esp, 40
-push	dword [ebp-4]
-push	dword [ebp-8]
-pop	ebx
-pop	eax
-lea	eax, [eax+ebx]
-push	dword eax
-push	dword [ebp-8]
-pop	ebx
-pop	eax
-mult	eax, ebx
-push	dword eax
-lea	ebx, [ebp-12]
-pop	eax
-move	dword [ebx], eax
-push	dword [ebp-4]
-push	dword [ebp-8]
-pop	ebx
-pop	eax
-lea	eax, [eax+ebx]
-push	dword eax
-push	dword [ebp-4]
-push	dword [ebp-8]
-pop	ebx
-pop	eax
-mult	eax, ebx
-push	dword eax
-push	dword 1
-pop	ebx
-pop	eax
-move	edx, eax
-sar	edx, 31
-div	ebx
-push	dword eax
-pop	ebx
-pop	eax
-sub	eax, ebx
-push	dword eax
-lea	ebx, [ebp-12]
-pop	eax
-move	dword [ebx], eax
-push	dword [ebp-4]
-push	dword [ebp-8]
-pop	ebx
-pop	eax
-cmp	eax, ebx
-setg	al
-movzx	eax, al
-push	dword eax
-pop	eax
-cmp	eax, 0
-beq	L1
-push	dword [ebp-4]
-push	dword [ebp-8]
-pop	ebx
-pop	eax
-sub	eax, ebx
-push	dword eax
-lea	ebx, [ebp-12]
-pop	eax
-move	dword [ebx], eax
+addi	$sp, $sp, -4
+sw	$fp, 0($sp)
+move	$fp, $sp
+addi	$sp, $sp, -4
+addi	$sp, $sp, -4
+addi	$sp, $sp, -4
+addi	$sp, $sp, -4
+addi	$sp, $sp, -40
+addi	$sp, $sp, -4
+sw	-4($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	-8($fp), 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+lea	$t0, $t1($t0)
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+addi	$sp, $sp, -4
+sw	-8($fp), 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+mult	$t0, $t1
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lea	$t1, -12($fp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
+addi	$sp, $sp, -4
+sw	-4($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	-8($fp), 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+lea	$t0, $t1($t0)
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+addi	$sp, $sp, -4
+sw	-4($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	-8($fp), 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+mult	$t0, $t1
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+addi	$sp, $sp, -4
+sw	1, 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	$t3, $t0
+sar	$t3, 31
+div	$t6, $t1
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+sub	$t0, $t1
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lea	$t1, -12($fp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
+addi	$sp, $sp, -4
+sw	-4($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	-8($fp), 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+addi	$t9, $t9, 1
+slt	$t8, $t1, $t0
+beq	$t8, $t9, GT
+GT:
+move	$t4, $t9
+movzx	$t0, $t4
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+addi	$t8, $t8, 0
+beq	$t0, $t8, L1
+addi	$sp, $sp, -4
+sw	-4($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	-8($fp), 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+sub	$t0, $t1
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lea	$t1, -12($fp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
 j	L2
 L1:
-push	dword [ebp-8]
-push	dword [ebp-4]
-pop	ebx
-pop	eax
-sub	eax, ebx
-push	dword eax
-lea	ebx, [ebp-12]
-pop	eax
-move	dword [ebx], eax
+addi	$sp, $sp, -4
+sw	-8($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	-4($fp), 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+sub	$t0, $t1
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lea	$t1, -12($fp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
 L2:
-push	dword 10
-lea	ebx, [ebp-16]
-pop	eax
-move	dword [ebx], eax
+addi	$sp, $sp, -4
+sw	10, 0($sp)
+lea	$t1, -16($fp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
 j	L3
 L4:
-push	dword [ebp-16]
-push	dword 1
-pop	ebx
-pop	eax
-sub	eax, ebx
-push	dword eax
-lea	ebx, [ebp-16]
-pop	eax
-move	dword [ebx], eax
+addi	$sp, $sp, -4
+sw	-16($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	1, 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+sub	$t0, $t1
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lea	$t1, -16($fp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
 L3:
-push	dword [ebp-16]
-push	dword 0
-pop	ebx
-pop	eax
-cmp	eax, ebx
-setg	al
-movzx	eax, al
-push	dword eax
-pop	eax
-cmp	eax, 1
-beq	L4
-push	dword 5
-push	dword 1
-pop	eax
-move	ebx, ebp
-mult	eax, 4
-add	ebx, eax
-sub	ebx, 56
-pop	eax
-move	dword [ebx], eax
-push	dword 10
-push	dword 6
-pop	eax
-move	ebx, ebp
-mult	eax, 4
-add	ebx, eax
-sub	ebx, 56
-pop	eax
-move	dword [ebx], eax
-push	dword 1
-pop	eax
-move	ebx, ebp
-mult	eax, 4
-add	ebx, eax
-sub	ebx, 56
-push	dword [ebx]
-push	dword 6
-pop	eax
-move	ebx, ebp
-mult	eax, 4
-add	ebx, eax
-sub	ebx, 56
-push	dword [ebx]
-pop	ebx
-pop	eax
-lea	eax, [eax+ebx]
-push	dword eax
-lea	ebx, [ebp-12]
-pop	eax
-move	dword [ebx], eax
-push	dword [ebp-4]
-push	dword [ebp-8]
+addi	$sp, $sp, -4
+sw	-16($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	0, 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+addi	$t9, $t9, 1
+slt	$t8, $t1, $t0
+beq	$t8, $t9, GT
+GT:
+move	$t4, $t9
+movzx	$t0, $t4
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+addi	$t8, $t8, 1
+beq	$t0, $t8, L4
+addi	$sp, $sp, -4
+sw	5, 0($sp)
+addi	$sp, $sp, -4
+sw	1, 0($sp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	$t1, $fp
+addi	$t7, $t7, 4
+mult	$t0, $t7
+add	$t1, $t1, $t0
+addi	$t1, $t1, -56
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
+addi	$sp, $sp, -4
+sw	10, 0($sp)
+addi	$sp, $sp, -4
+sw	6, 0($sp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	$t1, $fp
+addi	$t7, $t7, 4
+mult	$t0, $t7
+add	$t1, $t1, $t0
+addi	$t1, $t1, -56
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
+addi	$sp, $sp, -4
+sw	1, 0($sp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	$t1, $fp
+addi	$t7, $t7, 4
+mult	$t0, $t7
+add	$t1, $t1, $t0
+addi	$t1, $t1, -56
+addi	$sp, $sp, -4
+sw	0($t1), 0($sp)
+addi	$sp, $sp, -4
+sw	6, 0($sp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	$t1, $fp
+addi	$t7, $t7, 4
+mult	$t0, $t7
+add	$t1, $t1, $t0
+addi	$t1, $t1, -56
+addi	$sp, $sp, -4
+sw	0($t1), 0($sp)
+lw	$t1, 0($sp)
+addi	$sp, $sp, 4
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+lea	$t0, $t1($t0)
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lea	$t1, -12($fp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
+addi	$sp, $sp, -4
+sw	-4($fp), 0($sp)
+addi	$sp, $sp, -4
+sw	-8($fp), 0($sp)
 jal	F_206329998
-add	esp, 8
-push	dword eax
-lea	ebx, [ebp-12]
-pop	eax
-move	dword [ebx], eax
-push	dword 0
-pop	eax
-leave
+addi	$sp, $sp, 8
+addi	$sp, $sp, -4
+sw	$t0, 0($sp)
+lea	$t1, -12($fp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	 0($t1), $t0
+addi	$sp, $sp, -4
+sw	0, 0($sp)
+lw	$t0, 0($sp)
+addi	$sp, $sp, 4
+move	$sp, $fp
+lw	$fp, 0($sp)
+addi	$sp, $sp, 4
 jr
-leave
+move	$sp, $fp
+lw	$fp, 0($sp)
+addi	$sp, $sp, 4
 jr
