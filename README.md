@@ -1,11 +1,29 @@
 # Simple_Compiler
-## Compile and execution
-- make lex<br>
-- make yacc<br>
-- make<br>
 
-- ./parser < test.c > test.asm<br>
+[![License: IEEE](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-## Status
-- PRINT and READ need to fix.
-- LEA need to fix.
+## Installation
+
+* Compilation
+  ```bash
+  $ make lex
+  $ make yacc
+  $ make
+  ```
+* Execution
+  ```bash
+  ./parser < test.c > test.asm
+  ```
+
+## TODO
+
+* `PRINT` and `READ` need to fix.
+* `LEA` need to fix.
+
+
+## Author
+
+* [Yung-Sheng Lu](http://github.com/yungshenglu)
+
+---
+[![License: IEEE](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
